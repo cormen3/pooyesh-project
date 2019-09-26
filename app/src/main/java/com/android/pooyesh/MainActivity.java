@@ -10,6 +10,12 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 public class MainActivity extends AppCompatActivity {
 
     private List<Movie> movieList = new ArrayList<>();
@@ -29,7 +35,29 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(mAdapter);
 
-        prepareMovieData();
+
+        Retrofit retrofit = new retrofit2.Retrofit.Builder()
+                .baseUrl("http://www.mocky.io/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GetDataService getDataService = retrofit.create(GetDataService.class);
+
+        getDataService.getAllMovies().enqueue(new Callback<List<Movie>>() {
+            @Override
+            public void onResponse(Call<List<Movie>> call, Response<List<Movie>> response) {
+                movieList.addAll(response.body());
+                mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onFailure(Call<List<Movie>> call, Throwable t) {
+
+            }
+        });
+
+//        prepareMovieData();
+
     }
 
     private void prepareMovieData() {
